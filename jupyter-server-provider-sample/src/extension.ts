@@ -30,7 +30,9 @@ export function activate(context: ExtensionContext) {
 		}
 	);
 	// Link to documentation explaining this Jupyter Collection is optional.
-	jupyterLab.documentation = Uri.parse('https://github.com/microsoft/vscode-jupyter-hub/wiki/Connecting-to-JupyterHub-from-VS-Code');
+	jupyterLab.documentation = Uri.parse(
+		'https://github.com/microsoft/vscode-jupyter-hub/wiki/Connecting-to-JupyterHub-from-VS-Code'
+	);
 	context.subscriptions.push(jupyterLab);
 	// // Commands are optional.
 	jupyterLab.commandProvider = {
@@ -116,7 +118,7 @@ export function activate(context: ExtensionContext) {
 	// Thus an extension can contribute more than one collection of servers.
 	const jupyterNotebook = jupyterExt.exports.createJupyterServerCollection(
 		`${context.extension.id}:notebook`,
-		'Local Jupyter Notebook Servers...',
+		'CS Jupyter Notebook Servers...',
 		{
 			provideJupyterServers: () => provideJupyterServers('notebook'),
 			resolveJupyterServer: (server) => server,
@@ -124,25 +126,48 @@ export function activate(context: ExtensionContext) {
 	);
 	context.subscriptions.push(jupyterNotebook);
 	// Commands are optional.
-	jupyterNotebook.commandProvider = {
-		provideCommands: () => {
-			return [
-				{
-					label: 'Start Jupyter Notebook',
-					description: 'Start a new server in the terminal',
-				},
-			];
-		},
-		handleCommand: async (command, token) => {
-			if (command.label === 'Start Jupyter Notebook') {
-				// Upon staring a server, return that server back to the Jupyter Extension.
-				return startJupyterInTerminal('notebook', undefined, token);
-			}
-		},
-	};
+	// jupyterNotebook.commandProvider = {
+	// 	provideCommands: () => {
+	// 		return [
+	// 			{
+	// 				label: 'Start Jupyter Notebook',
+	// 				description: 'Start a new server in the terminal',
+	// 			},
+	// 		];
+	// 	},
+	// 	handleCommand: async (command, token) => {
+	// 		if (command.label === 'Start Jupyter Notebook') {
+	// 			// Upon staring a server, return that server back to the Jupyter Extension.
+	// 			return startJupyterInTerminal('notebook', undefined, token);
+	// 		}
+	// 	},
+	// };
 }
 
 async function provideJupyterServers(type: 'lab' | 'notebook') {
+	if (type === 'notebook') {
+		const ss = [
+			{
+				url: 'http://9.134.246.8:18888',
+				token: '',
+			},
+			// {
+			// 	url: 'http://43.155.247.25:6888/',
+			// 	token: '58933385df46af4386ead06152fa00c032ecf2d06f9bf380e8b12b77087c588a',
+			// },
+		];
+		return ss.map((server) => {
+			return {
+				id: server.url,
+				label: server.url,
+				connectionInformation: {
+					baseUrl: Uri.parse(server.url),
+					token: server.token,
+				},
+			};
+		});
+	}
+
 	const servers = await findLocallyRunningServers(type);
 	return servers.map((server) => {
 		return {
